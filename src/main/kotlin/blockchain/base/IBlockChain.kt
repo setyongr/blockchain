@@ -2,17 +2,16 @@ package blockchain.base
 
 import blockchain.model.Block
 
-interface IBlockChain<T> {
-    fun getDataString(data: T?): String
-    fun createGenesis(): Block<T>
-    fun createBlock(data: T): Block<T>
-    fun add(data: T)
-    fun verifyBlock(block: Block<T>): Boolean
+interface IBlockChain {
+    fun createGenesis(): Block
+    fun createBlock(data: String): Block
+    fun add(data: String)
+    fun verifyBlock(block: Block): Boolean
     fun verifyChain(): Boolean
-    fun genesis(): Block<T>
-    fun last(): Block<T>
-    fun findByIndex(index: Int): Block<T>?
-    fun findByHash(hash: String): Block<T>?
-    fun prev(block: Block<T>): Block<T>?
-    fun next(block: Block<T>): Block<T>?
+    fun genesis(): Block
+    fun last(): Block
+    fun findByIndex(index: Int): Block?
+    fun findByHash(hash: String): Block?
+    fun prev(block: Block): Block?
+    fun next(block: Block): Block?
 }
