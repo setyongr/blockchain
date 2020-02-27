@@ -5,11 +5,12 @@ import utils.HashUtils
 
 abstract class BaseBlockchain : IBlockChain {
     private fun hashBlock(block: Block): String {
-        return HashUtils.sha512("${block.index}${block.timestamp}${block.data}")
+        return HashUtils.sha512("WowBlock${block.nonce}${block.index}${block.timestamp}${block.data}")
     }
 
     override fun createGenesis(): Block = Block(
         index = 0,
+        nonce = 0,
         timestamp = System.currentTimeMillis().toString(),
         data = null,
         prevHash = ""
@@ -17,12 +18,23 @@ abstract class BaseBlockchain : IBlockChain {
 
     override fun createBlock(data: String): Block {
         val lastBlock = last()
-        return Block(
+        val block =  Block(
             index = lastBlock.index + 1,
             timestamp = System.currentTimeMillis().toString(),
             data = data,
-            prevHash = lastBlock.hash
-        ).let { it.copy(hash = hashBlock(it)) }
+            prevHash = lastBlock.hash,
+            nonce = 0
+        )
+
+        // find nonce
+        var hash = hashBlock(block)
+        while (hash.substring(0, 3) != "000") {
+            block.nonce += 1
+            hash = hashBlock(block)
+        }
+
+        block.hash = hash
+        return block
     }
 
     override fun verifyBlock(block: Block): Boolean {

@@ -9,6 +9,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 
 object BlockTable : IntIdTable() {
     val index = integer("index")
+    val nonce = integer("nonce")
     val timestamp = varchar("timestamp", 255)
     val data = text("data")
     val hash = varchar("hash", 255)
@@ -20,6 +21,7 @@ class BlockEntity(id: EntityID<Int>) : IntEntity(id) {
         fun newBlock(block: Block) {
             new {
                 index = block.index
+                nonce = block.nonce
                 timestamp = block.timestamp
                 data = block.data.orEmpty()
                 hash = block.hash
@@ -29,13 +31,14 @@ class BlockEntity(id: EntityID<Int>) : IntEntity(id) {
     }
 
     var index by BlockTable.index
+    var nonce by BlockTable.nonce
     var timestamp by BlockTable.timestamp
     var data by BlockTable.data
     var hash by BlockTable.hash
     var prevHash by BlockTable.prevHash
 
     fun toBlock(): Block {
-        return Block(index, timestamp, data, hash, prevHash)
+        return Block(index, nonce, timestamp, data, hash, prevHash)
     }
 
 }

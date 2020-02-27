@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class DBBlockChain : BaseBlockchain() {
+class DBBlockChain(resetTable: Boolean = false) : BaseBlockchain() {
 
     init {
         val dbName = "blockchain"
@@ -22,7 +22,8 @@ class DBBlockChain : BaseBlockchain() {
 
 
         transaction {
-            SchemaUtils.create(BlockTable)
+            if (resetTable) SchemaUtils.drop(BlockTable)
+            SchemaUtils.createMissingTablesAndColumns(BlockTable)
 
             if (BlockEntity.count() == 0) {
                 BlockEntity.newBlock(createGenesis())
