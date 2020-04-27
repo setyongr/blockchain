@@ -1,4 +1,4 @@
-package blockchain.model
+package data.model
 
 data class Block(
     var index: Int,

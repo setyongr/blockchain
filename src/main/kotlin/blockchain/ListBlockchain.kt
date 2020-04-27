@@ -1,7 +1,7 @@
 package blockchain
 
 import blockchain.base.BaseBlockchain
-import blockchain.model.Block
+import data.model.Block
 
 class ListBlockchain : BaseBlockchain() {
     var listBlock = listOf<Block>()

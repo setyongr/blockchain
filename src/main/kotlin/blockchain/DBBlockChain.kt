@@ -1,9 +1,9 @@
 package blockchain
 
 import blockchain.base.BaseBlockchain
-import blockchain.db.BlockEntity
-import blockchain.db.BlockTable
-import blockchain.model.Block
+import data.db.BlockEntity
+import data.db.BlockTable
+import data.model.Block
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction

@@ -1,6 +1,6 @@
 package blockchain.base
 
-import blockchain.model.Block
+import data.model.Block
 
 interface IBlockChain {
     fun createGenesis(): Block

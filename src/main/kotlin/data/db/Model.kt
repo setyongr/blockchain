@@ -1,6 +1,6 @@
-package blockchain.db
+package data.db
 
-import blockchain.model.Block
+import data.model.Block
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID

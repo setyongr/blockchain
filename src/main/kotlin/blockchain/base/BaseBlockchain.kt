@@ -1,6 +1,6 @@
 package blockchain.base
 
-import blockchain.model.Block
+import data.model.Block
 import utils.HashUtils
 
 abstract class BaseBlockchain : IBlockChain {

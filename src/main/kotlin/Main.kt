@@ -8,12 +8,15 @@ import io.ktor.features.DefaultHeaders
 import io.ktor.jackson.jackson
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import org.slf4j.event.Level
 
 val controller = Controller()
 
 fun Application.module() {
     install(DefaultHeaders)
-    install(CallLogging)
+    install(CallLogging) {
+        level = Level.INFO
+    }
     install(ContentNegotiation) {
         jackson {
             enable(SerializationFeature.INDENT_OUTPUT) // Pretty Prints the JSON

@@ -1,7 +1,9 @@
 package api
 
 import blockchain.ListBlockchain
-import blockchain.model.Block
+import data.model.AddData
+import data.model.Block
+import data.model.PoolItem
 import datapool.DataPool
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -9,7 +11,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.request.get
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Routing
@@ -21,30 +22,30 @@ import peer.NetworkPeer
 
 @KtorExperimentalAPI
 class Controller {
-    private val blockchain = ListBlockchain()
-    private val networkPeer = NetworkPeer()
-    private val dataPool = DataPool(blockchain, networkPeer)
-
-    val client = HttpClient(CIO) {
+    private val client = HttpClient(CIO) {
         install(JsonFeature) {
             serializer = JacksonSerializer()
         }
     }
 
+    private val blockchain = ListBlockchain()
+    private val networkPeer = NetworkPeer(client)
+    private val dataPool = DataPool(blockchain, networkPeer)
+
     init {
-        networkPeer.addHost("127.0.0.1")
+        networkPeer.addHost("http://127.0.0.1:8080")
+
+        // TODO: Sync Block Chain
     }
-
-
 
     fun initRouting(application: Application) = application.apply {
         routing {
-            showBlockChain()
+            showData()
             addData()
         }
     }
 
-    private fun Routing.showBlockChain() {
+    private fun Routing.showData() {
         get("/blockchain") {
             val blocks = mutableListOf<Block>()
             var current: Block? = blockchain.genesis()
@@ -54,14 +55,24 @@ class Controller {
             }
             call.respond(blocks)
         }
+
+        get("/pool") {
+            val poolItems = dataPool.getPoolItem()
+            call.respond(poolItems)
+        }
     }
 
     private fun Routing.addData() {
         post("/add") {
             val data = call.receive<AddData>()
             dataPool.add(data.data)
-            val blocks = client.get<List<Block>>("http://localhost:8080/blockchain")
-            call.respond(blocks)
+            call.respond(mapOf("OK" to true))
+        }
+
+        post("/add_pool_item") {
+            val data = call.receive<PoolItem>()
+            dataPool.addItem(data)
+            call.respond(mapOf("OK" to true))
         }
     }
 }

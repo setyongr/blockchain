@@ -1,6 +1,6 @@
 package peer
 
-import blockchain.model.PoolItem
+import data.model.PoolItem
 
 interface Peer {
     fun send(data: PoolItem)

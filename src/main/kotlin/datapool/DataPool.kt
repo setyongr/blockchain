@@ -1,8 +1,10 @@
 package datapool
 
 import blockchain.base.BaseBlockchain
-import blockchain.model.PoolItem
+import data.model.PoolItem
+import com.fasterxml.jackson.databind.ObjectMapper
 import peer.Peer
+import utils.HashUtils.sha512
 import java.util.*
 
 class DataPool(private val blockChain: BaseBlockchain, private val peer: Peer) {
@@ -11,30 +13,31 @@ class DataPool(private val blockChain: BaseBlockchain, private val peer: Peer) {
 
     private var pool = PriorityQueue<PoolItem>()
 
+    fun getPoolItem() = pool.toList()
+
     fun add(data: String) {
-        add(data, System.currentTimeMillis())
+        val timestamp = System.currentTimeMillis()
+        val item = PoolItem(data, timestamp, sha512(data + timestamp.toString()))
+
+        addItem(item)
     }
 
-    private fun add(data: String, timestamp: Long) {
-        val item = PoolItem(data, timestamp)
-        pool.add(item)
-        peer.send(item)
-        afterAdd()
-    }
-
-    fun addNoBroadcast(poolItem: PoolItem) {
-        pool.add(poolItem)
-        afterAdd()
+    fun addItem(item: PoolItem) {
+        if (!pool.contains(item)) {
+            pool.add(item)
+            peer.send(item)
+            afterAdd()
+        }
     }
 
     private fun afterAdd() {
         if (pool.size >= blockDataCount) {
-            val dataList = mutableListOf<String>()
+            val dataList = mutableListOf<PoolItem>()
             repeat(blockDataCount) {
-                dataList.add(pool.poll().data)
+                dataList.add(pool.poll())
             }
 
-            val dataStr = dataList.joinToString(",")
+            val dataStr = ObjectMapper().writeValueAsString(dataList)
             val minedData = blockChain.mine(blockChain.createBlock(dataStr))
             blockChain.add(minedData)
         }
