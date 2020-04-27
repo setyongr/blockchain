@@ -10,8 +10,8 @@ class ListBlockchain : BaseBlockchain() {
         listBlock = listBlock + createGenesis()
     }
 
-    override fun add(data: String) {
-        listBlock = listBlock + createBlock(data)
+    override fun add(block: Block) {
+        listBlock = listBlock + block
     }
 
     override fun genesis(): Block = listBlock.first()

@@ -4,6 +4,8 @@ import blockchain.model.Block
 import utils.HashUtils
 
 abstract class BaseBlockchain : IBlockChain {
+    var difficulty = 3
+
     private fun hashBlock(block: Block): String {
         return HashUtils.sha512("WowBlock${block.nonce}${block.index}${block.timestamp}${block.data}")
     }
@@ -18,17 +20,20 @@ abstract class BaseBlockchain : IBlockChain {
 
     override fun createBlock(data: String): Block {
         val lastBlock = last()
-        val block =  Block(
+
+        return Block(
             index = lastBlock.index + 1,
             timestamp = System.currentTimeMillis().toString(),
             data = data,
             prevHash = lastBlock.hash,
             nonce = 0
         )
+    }
 
+    override fun mine(block: Block): Block {
         // find nonce
         var hash = hashBlock(block)
-        while (hash.substring(0, 3) != "000") {
+        while (hash.substring(0, difficulty) != "0".repeat(difficulty)) {
             block.nonce += 1
             hash = hashBlock(block)
         }

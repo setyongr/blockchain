@@ -31,9 +31,9 @@ class DBBlockChain(resetTable: Boolean = false) : BaseBlockchain() {
         }
     }
 
-    override fun add(data: String) {
+    override fun add(block: Block) {
         transaction {
-            BlockEntity.newBlock(createBlock(data))
+            BlockEntity.newBlock(block)
         }
     }
 

@@ -5,7 +5,7 @@ import blockchain.model.Block
 interface IBlockChain {
     fun createGenesis(): Block
     fun createBlock(data: String): Block
-    fun add(data: String)
+    fun add(block: Block)
     fun verifyBlock(block: Block): Boolean
     fun verifyChain(): Boolean
     fun genesis(): Block
@@ -14,4 +14,5 @@ interface IBlockChain {
     fun findByHash(hash: String): Block?
     fun prev(block: Block): Block?
     fun next(block: Block): Block?
+    fun mine(block: Block): Block
 }
