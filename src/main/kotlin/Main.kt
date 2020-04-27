@@ -1,33 +1,28 @@
-import blockchain.ListBlockchain
-import blockchain.model.Block
-import datapool.DataPool
-import peer.NetworkPeer
+import api.Controller
+import com.fasterxml.jackson.databind.SerializationFeature
+import io.ktor.application.Application
+import io.ktor.application.install
+import io.ktor.features.CallLogging
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.DefaultHeaders
+import io.ktor.jackson.jackson
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 
-fun main(args: Array<String>) {
-    val blockchain = ListBlockchain()
-    blockchain.difficulty = 5
+val controller = Controller()
 
-    val networkPeer = NetworkPeer()
-    networkPeer.addHost("127.0.0.1")
-
-    val dataPool = DataPool(blockchain, networkPeer)
-
-    dataPool.add("Tes")
-    dataPool.add("Tes2")
-    dataPool.add("Tes3")
-    dataPool.add("Tes4")
-    dataPool.add("Tes5")
-    dataPool.add("Tes6")
-    dataPool.add("Tes7")
-    dataPool.add("Tes8")
-
-
-    // Show Block Chain
-    var current: Block? = blockchain.genesis()
-    while (current != null) {
-        println(current.data)
-        current = blockchain.next(current)
+fun Application.module() {
+    install(DefaultHeaders)
+    install(CallLogging)
+    install(ContentNegotiation) {
+        jackson {
+            enable(SerializationFeature.INDENT_OUTPUT) // Pretty Prints the JSON
+        }
     }
 
-    println("Is Valid: ${blockchain.verifyChain()}")
+    controller.initRouting(this)
+}
+
+fun main(args: Array<String>) {
+    embeddedServer(Netty, 8080, watchPaths = listOf("blockchain"), module = Application::module).start()
 }
