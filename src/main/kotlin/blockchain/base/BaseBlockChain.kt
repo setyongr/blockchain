@@ -1,6 +1,7 @@
 package blockchain.base
 
 import data.model.Block
+import data.model.PoolItem
 import kotlinx.coroutines.*
 import utils.HashUtils
 
@@ -11,18 +12,21 @@ abstract class BaseBlockChain : BlockChain {
     private var miningJob: Job? = null
 
     private fun hashBlock(block: Block): String {
-        return HashUtils.sha512("${salt}${block.nonce}${block.index}${block.timestamp}${block.data}")
+        val dataHashList = block.data.joinToString {
+            HashUtils.sha256(it.data + it.timestamp)
+        }
+        return HashUtils.sha512("${salt}${block.nonce}${block.index}${block.timestamp}${dataHashList}")
     }
 
     override fun createGenesis(): Block = Block(
         index = 0,
         nonce = 0,
         timestamp = "0",
-        data = null,
+        data = emptyList(),
         prevHash = ""
     ).let { it.copy(hash = hashBlock(it)) }
 
-    override fun createBlock(data: String): Block {
+    override fun createBlock(data: List<PoolItem>): Block {
         val lastBlock = last()
 
         return Block(

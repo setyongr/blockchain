@@ -17,7 +17,7 @@ class DataPool(private val blockChain: BlockChain, private val peer: Peer) {
 
     fun add(data: String) {
         val timestamp = System.currentTimeMillis()
-        val item = PoolItem(data, timestamp, sha512(data + timestamp.toString()))
+        val item = PoolItem(data, timestamp.toString())
 
         addItem(item)
     }
@@ -37,8 +37,7 @@ class DataPool(private val blockChain: BlockChain, private val peer: Peer) {
                 dataList.add(pool.poll())
             }
 
-            val dataStr = ObjectMapper().writeValueAsString(dataList)
-            blockChain.mine(blockChain.createBlock(dataStr)) {
+            blockChain.mine(blockChain.createBlock(dataList)) {
                 peer.notifyBlockAdded(it)
             }
         }

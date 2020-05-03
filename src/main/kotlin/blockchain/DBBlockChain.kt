@@ -1,6 +1,8 @@
 package blockchain
 
 import blockchain.base.BaseBlockChain
+import data.db.BlockDataEntity
+import data.db.BlockDataTable
 import data.db.BlockEntity
 import data.db.BlockTable
 import data.model.Block
@@ -18,8 +20,12 @@ class DBBlockChain(private val resetTable: Boolean = false) : BaseBlockChain() {
         )
 
         transaction {
-            if (resetTable) SchemaUtils.drop(BlockTable)
+            if (resetTable) {
+                SchemaUtils.drop(BlockTable)
+                SchemaUtils.drop(BlockDataTable)
+            }
             SchemaUtils.createMissingTablesAndColumns(BlockTable)
+            SchemaUtils.createMissingTablesAndColumns(BlockDataTable)
 
             if (BlockEntity.count() == 0) {
                 BlockEntity.newBlock(createGenesis())
