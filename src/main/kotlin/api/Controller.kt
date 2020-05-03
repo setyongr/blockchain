@@ -1,9 +1,15 @@
 package api
 
 import blockchain.DBBlockChain
-import blockchain.ListBlockChain
 import blockchain.base.BlockChain
-import data.model.*
+import data.db.BlockDataTable
+import data.db.BlockTable
+import data.db.HostTable
+import data.db.PoolTable
+import data.model.AddData
+import data.model.AddHost
+import data.model.Block
+import data.model.PoolItem
 import datapool.DataPool
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -18,6 +24,9 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
 import peer.NetworkPeer
 
 class Controller {
@@ -32,21 +41,44 @@ class Controller {
     private lateinit var networkPeer: NetworkPeer
     private lateinit var dataPool: DataPool
 
-    fun initController(application: Application) = application.apply {
-        val blockStorage = getConfigString("blockChainConfig.blockStorage")
-        blockChain = when (blockStorage) {
-            "db" -> DBBlockChain(getConfigString("postgresDatabase.resetDB") == "true").apply {
-                connect(
-                    host = getConfigString("postgresDatabase.host"),
-                    port = getConfigString("postgresDatabase.port"),
-                    database = getConfigString("postgresDatabase.database"),
-                    username = getConfigString("postgresDatabase.username"),
-                    password = getConfigString("postgresDatabase.password")
-                )
-            }
-            else -> ListBlockChain()
-        }
+    private fun connectDatabase(
+        host: String,
+        port: String,
+        database: String,
+        username: String,
+        password: String,
+        resetTable: Boolean
+    ) {
+        Database.connect(
+            "jdbc:postgresql://${host}:${port}/${database}", driver = "org.postgresql.Driver",
+            user = username, password = password
+        )
 
+        transaction {
+            if (resetTable) {
+                SchemaUtils.drop(BlockTable)
+                SchemaUtils.drop(BlockDataTable)
+                SchemaUtils.drop(PoolTable)
+                SchemaUtils.drop(HostTable)
+            }
+            SchemaUtils.createMissingTablesAndColumns(BlockTable)
+            SchemaUtils.createMissingTablesAndColumns(BlockDataTable)
+            SchemaUtils.createMissingTablesAndColumns(PoolTable)
+            SchemaUtils.createMissingTablesAndColumns(HostTable)
+        }
+    }
+
+    fun initController(application: Application) = application.apply {
+        connectDatabase(
+            host = getConfigString("postgresDatabase.host"),
+            port = getConfigString("postgresDatabase.port"),
+            database = getConfigString("postgresDatabase.database"),
+            username = getConfigString("postgresDatabase.username"),
+            password = getConfigString("postgresDatabase.password"),
+            resetTable = getConfigString("postgresDatabase.resetDB") == "true"
+        )
+
+        blockChain = DBBlockChain()
         blockChain.salt = getConfigString("blockChainConfig.salt")
         blockChain.difficulty = getConfigString("blockChainConfig.difficulty").toInt()
 
@@ -107,33 +139,31 @@ class Controller {
     }
 
     private fun Routing.peer() {
+        get("/peer") {
+            call.respond(
+                mapOf(
+                    "hosts" to networkPeer.getHost()
+                )
+            )
+        }
+
         post("/peer/add") {
             val data = call.receive<AddHost>()
-            networkPeer.hosts.add(data.host)
-            call.respond(mapOf(
-                "hosts" to networkPeer.hosts
-            ))
-        }
-
-        get("/peer") {
-            call.respond(mapOf(
-                "hosts" to networkPeer.hosts
-            ))
-        }
-
-        post("/peer/delete") {
-            val data = call.receive<RemoveHost>()
-            networkPeer.hosts.removeAt(data.index)
-            call.respond(mapOf(
-                "hosts" to networkPeer.hosts
-            ))
+            networkPeer.addHost(data.host)
+            call.respond(
+                mapOf(
+                    "hosts" to networkPeer.getHost()
+                )
+            )
         }
 
         post("/peer/clear") {
-            networkPeer.hosts.clear()
-            call.respond(mapOf(
-                "hosts" to networkPeer.hosts
-            ))
+            networkPeer.clearHost()
+            call.respond(
+                mapOf(
+                    "hosts" to networkPeer.getHost()
+                )
+            )
         }
     }
 }

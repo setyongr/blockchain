@@ -72,3 +72,26 @@ class BlockDataEntity(id: EntityID<Int>) : IntEntity(id) {
 
     var block by BlockEntity referencedOn BlockDataTable.block
 }
+
+object PoolTable : IntIdTable() {
+    val data = PoolTable.text("data")
+    val timestamp = PoolTable.varchar("timestamp", 255)
+}
+
+class PoolEntity(id: EntityID<Int>) : IntEntity(id) {
+    companion object : IntEntityClass<PoolEntity>(PoolTable)
+
+    var data by PoolTable.data
+    var timestamp by PoolTable.timestamp
+}
+
+object HostTable : IntIdTable() {
+    val host = HostTable.text("host")
+}
+
+class HostEntity(id: EntityID<Int>) : IntEntity(id) {
+    companion object : IntEntityClass<HostEntity>(HostTable)
+
+    var host by HostTable.host
+}
+

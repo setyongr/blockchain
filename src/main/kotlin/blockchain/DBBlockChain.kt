@@ -11,22 +11,9 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class DBBlockChain(private val resetTable: Boolean = false) : BaseBlockChain() {
-
-    fun connect(host: String, port: String, database: String, username: String, password: String) {
-        Database.connect(
-            "jdbc:postgresql://${host}:${port}/${database}", driver = "org.postgresql.Driver",
-            user = username, password = password
-        )
-
+class DBBlockChain : BaseBlockChain() {
+    init {
         transaction {
-            if (resetTable) {
-                SchemaUtils.drop(BlockTable)
-                SchemaUtils.drop(BlockDataTable)
-            }
-            SchemaUtils.createMissingTablesAndColumns(BlockTable)
-            SchemaUtils.createMissingTablesAndColumns(BlockDataTable)
-
             if (BlockEntity.count() == 0) {
                 BlockEntity.newBlock(createGenesis())
             }

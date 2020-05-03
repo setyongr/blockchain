@@ -3,6 +3,7 @@ package blockchain
 import blockchain.base.BaseBlockChain
 import data.model.Block
 
+@Deprecated("DONT USE, FOR REFERENCE ONLY")
 class ListBlockChain : BaseBlockChain() {
     var listBlock = listOf<Block>()
 
