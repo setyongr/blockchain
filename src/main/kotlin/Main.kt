@@ -21,5 +21,5 @@ fun Application.main() {
         }
     }
 
-    controller.initRouting(this)
+    controller.initController(this)
 }

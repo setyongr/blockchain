@@ -1,10 +1,9 @@
 package api
 
+import blockchain.DBBlockChain
 import blockchain.ListBlockchain
-import data.model.AddData
-import data.model.AddHost
-import data.model.Block
-import data.model.PoolItem
+import blockchain.base.IBlockChain
+import data.model.*
 import datapool.DataPool
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -20,6 +19,7 @@ import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 import peer.NetworkPeer
+import peer.Peer
 
 class Controller {
     @KtorExperimentalAPI
@@ -29,21 +29,38 @@ class Controller {
         }
     }
 
-    private val blockchain = ListBlockchain()
-    private val networkPeer = NetworkPeer(client, blockchain)
-    private val dataPool = DataPool(blockchain, networkPeer)
+    private lateinit var blockchain: IBlockChain
+    private lateinit var networkPeer: NetworkPeer
+    private lateinit var dataPool: DataPool
 
-    init {
+    fun initController(application: Application) = application.apply {
+        val blockStorage = getConfigString("blockChainConfig.blockStorage")
+        blockchain = when (blockStorage) {
+            "db" -> DBBlockChain(getConfigString("postgresDatabase.resetDB") == "true").apply {
+                connect(
+                    host = getConfigString("postgresDatabase.host"),
+                    port = getConfigString("postgresDatabase.port"),
+                    database = getConfigString("postgresDatabase.database"),
+                    username = getConfigString("postgresDatabase.username"),
+                    password = getConfigString("postgresDatabase.password")
+                )
+            }
+            else -> ListBlockchain()
+        }
+        networkPeer = NetworkPeer(client, blockchain)
+        dataPool = DataPool(blockchain, networkPeer)
+
         networkPeer.startSyncJob()
-    }
 
-    fun initRouting(application: Application) = application.apply {
         routing {
             showData()
             addData()
             peer()
         }
     }
+
+    @KtorExperimentalAPI
+    private fun Application.getConfigString(path: String) = environment.config.propertyOrNull(path)?.getString() ?: ""
 
     private fun Routing.showData() {
         get("/blockchain") {
@@ -89,8 +106,31 @@ class Controller {
     private fun Routing.peer() {
         post("/peer/add") {
             val data = call.receive<AddHost>()
-            networkPeer.addHost(data.host)
-            call.respond(mapOf("OK" to true))
+            networkPeer.hosts.add(data.host)
+            call.respond(mapOf(
+                "hosts" to networkPeer.hosts
+            ))
+        }
+
+        get("/peer") {
+            call.respond(mapOf(
+                "hosts" to networkPeer.hosts
+            ))
+        }
+
+        post("/peer/delete") {
+            val data = call.receive<RemoveHost>()
+            networkPeer.hosts.removeAt(data.index)
+            call.respond(mapOf(
+                "hosts" to networkPeer.hosts
+            ))
+        }
+
+        post("/peer/clear") {
+            networkPeer.hosts.clear()
+            call.respond(mapOf(
+                "hosts" to networkPeer.hosts
+            ))
         }
     }
 }

@@ -11,15 +11,7 @@ import kotlinx.coroutines.*
 class NetworkPeer(private val client: HttpClient, private val blockchain: IBlockChain) : Peer {
     private var syncJob: Job? = null
 
-    private var hosts = mutableListOf<String>()
-
-    fun addHost(host: String) {
-        hosts.add(host)
-    }
-
-    fun clearHost() {
-        hosts.clear()
-    }
+    var hosts = mutableListOf<String>()
 
     override fun send(data: PoolItem) {
         val json = io.ktor.client.features.json.defaultSerializer()
