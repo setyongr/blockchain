@@ -8,7 +8,7 @@ import datapool.DataPool
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.request.receive
@@ -22,7 +22,7 @@ import peer.NetworkPeer
 
 class Controller {
     @KtorExperimentalAPI
-    private val client = HttpClient(CIO) {
+    private val client = HttpClient(OkHttp) {
         install(JsonFeature) {
             serializer = JacksonSerializer()
         }
@@ -32,8 +32,9 @@ class Controller {
     private val networkPeer = NetworkPeer(client, blockchain)
     private val dataPool = DataPool(blockchain, networkPeer)
 
-    init {
-        networkPeer.addHost("http://127.0.0.1:8080")
+    fun initPeer(application: Application) {
+        val hosts = application.environment.config.propertyOrNull("peer.hosts")?.getList()
+        hosts?.forEach { networkPeer.addHost(it) }
         networkPeer.startSyncJob()
     }
 

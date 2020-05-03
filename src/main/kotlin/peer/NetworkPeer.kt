@@ -30,6 +30,7 @@ class NetworkPeer(private val client: HttpClient, private val blockchain: IBlock
     }
 
     override fun sync() {
+        if (hosts.isEmpty()) return
         val currentLastBlock = blockchain.last()
         runBlocking {
             val listBlock = hosts.map {
