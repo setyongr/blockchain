@@ -25,4 +25,8 @@ class ListBlockchain : BaseBlockchain() {
     override fun prev(block: Block): Block? = findByIndex(block.index - 1)
 
     override fun next(block: Block): Block? = findByIndex(block.index + 1)
+
+    override fun replace(block: List<Block>) {
+        listBlock = block
+    }
 }

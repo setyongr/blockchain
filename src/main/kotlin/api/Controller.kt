@@ -20,8 +20,8 @@ import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 import peer.NetworkPeer
 
-@KtorExperimentalAPI
 class Controller {
+    @KtorExperimentalAPI
     private val client = HttpClient(CIO) {
         install(JsonFeature) {
             serializer = JacksonSerializer()
@@ -29,13 +29,12 @@ class Controller {
     }
 
     private val blockchain = ListBlockchain()
-    private val networkPeer = NetworkPeer(client)
+    private val networkPeer = NetworkPeer(client, blockchain)
     private val dataPool = DataPool(blockchain, networkPeer)
 
     init {
         networkPeer.addHost("http://127.0.0.1:8080")
-
-        // TODO: Sync Block Chain
+        networkPeer.startSyncJob()
     }
 
     fun initRouting(application: Application) = application.apply {
@@ -73,6 +72,11 @@ class Controller {
             val data = call.receive<PoolItem>()
             dataPool.addItem(data)
             call.respond(mapOf("OK" to true))
+        }
+
+        post("/notify_new_block") {
+            val block = call.receive<Block>()
+            blockchain.newBlockFromPeer(block)
         }
     }
 }

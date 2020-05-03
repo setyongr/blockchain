@@ -6,6 +6,7 @@ import data.db.BlockTable
 import data.model.Block
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class DBBlockChain(resetTable: Boolean = false) : BaseBlockchain() {
@@ -51,4 +52,13 @@ class DBBlockChain(resetTable: Boolean = false) : BaseBlockchain() {
     override fun prev(block: Block): Block? = transaction { findByIndex(block.index - 1) }
 
     override fun next(block: Block): Block? = transaction { findByIndex(block.index + 1) }
+
+    override fun replace(block: List<Block>) {
+        transaction {
+            BlockTable.deleteAll()
+            block.forEach {
+                BlockEntity.newBlock(it)
+            }
+        }
+    }
 }

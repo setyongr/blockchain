@@ -14,5 +14,7 @@ interface IBlockChain {
     fun findByHash(hash: String): Block?
     fun prev(block: Block): Block?
     fun next(block: Block): Block?
-    fun mine(block: Block): Block
+    fun mine(block: Block, onFinish: (block: Block) -> Unit)
+    fun replace(block: List<Block>)
+    fun newBlockFromPeer(block: Block)
 }

@@ -1,10 +1,13 @@
 package blockchain.base
 
 import data.model.Block
+import jdk.nashorn.internal.runtime.GlobalConstants
+import kotlinx.coroutines.*
 import utils.HashUtils
 
 abstract class BaseBlockchain : IBlockChain {
-    var difficulty = 3
+    private var difficulty = 3
+    var miningJob: Job? = null
 
     private fun hashBlock(block: Block): String {
         return HashUtils.sha512("WowBlock${block.nonce}${block.index}${block.timestamp}${block.data}")
@@ -30,16 +33,21 @@ abstract class BaseBlockchain : IBlockChain {
         )
     }
 
-    override fun mine(block: Block): Block {
-        // find nonce
-        var hash = hashBlock(block)
-        while (hash.substring(0, difficulty) != "0".repeat(difficulty)) {
-            block.nonce += 1
-            hash = hashBlock(block)
-        }
+    override fun mine(block: Block, onFinish: (block: Block) -> Unit) {
+        miningJob = GlobalScope.launch {
+            var hash = hashBlock(block)
+            val key = "0".repeat(difficulty)
+            while (isActive && hash.substring(0, difficulty) != key) {
+                block.nonce += 1
+                hash = hashBlock(block)
+            }
 
-        block.hash = hash
-        return block
+            if (isActive) {
+                block.hash = hash
+                add(block)
+                onFinish(block)
+            }
+        }
     }
 
     override fun verifyBlock(block: Block): Boolean {
@@ -55,5 +63,12 @@ abstract class BaseBlockchain : IBlockChain {
         }
 
         return valid
+    }
+
+    override fun newBlockFromPeer(block: Block) {
+        miningJob?.cancel()
+        if (last().hash == block.prevHash) {
+            add(block)
+        }
     }
 }
