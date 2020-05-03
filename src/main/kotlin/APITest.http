@@ -2,7 +2,7 @@ POST http://localhost:8080/add
 Content-Type: application/json
 
 {
-  "data": "Content"
+  "data": "Content 3"
 }
 
 ###
@@ -13,4 +13,14 @@ Content-Type: application/json
 GET http://localhost:8080/pool
 Content-Type: application/json
 
+###
+
+
+###
+POST http://localhost:8081/peer/add
+Content-Type: application/json
+
+{
+  "host": "http://localhost:8080"
+}
 ###

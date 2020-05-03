@@ -27,6 +27,7 @@ class ListBlockchain : BaseBlockchain() {
     override fun next(block: Block): Block? = findByIndex(block.index + 1)
 
     override fun replace(block: List<Block>) {
+        super.replace(block)
         listBlock = block
     }
 }

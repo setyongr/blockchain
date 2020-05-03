@@ -54,6 +54,7 @@ class DBBlockChain(resetTable: Boolean = false) : BaseBlockchain() {
     override fun next(block: Block): Block? = transaction { findByIndex(block.index + 1) }
 
     override fun replace(block: List<Block>) {
+        super.replace(block)
         transaction {
             BlockTable.deleteAll()
             block.forEach {

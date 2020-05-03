@@ -16,7 +16,7 @@ abstract class BaseBlockchain : IBlockChain {
     override fun createGenesis(): Block = Block(
         index = 0,
         nonce = 0,
-        timestamp = System.currentTimeMillis().toString(),
+        timestamp = "0",
         data = null,
         prevHash = ""
     ).let { it.copy(hash = hashBlock(it)) }
@@ -63,6 +63,10 @@ abstract class BaseBlockchain : IBlockChain {
         }
 
         return valid
+    }
+
+    override fun replace(block: List<Block>) {
+        miningJob?.cancel()
     }
 
     override fun newBlockFromPeer(block: Block) {

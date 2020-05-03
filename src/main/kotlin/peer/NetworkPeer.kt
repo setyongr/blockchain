@@ -17,12 +17,20 @@ class NetworkPeer(private val client: HttpClient, private val blockchain: IBlock
         hosts.add(host)
     }
 
+    fun clearHost() {
+        hosts.clear()
+    }
+
     override fun send(data: PoolItem) {
         val json = io.ktor.client.features.json.defaultSerializer()
         runBlocking {
             hosts.forEach {
-                client.post("$it/add_pool_item") {
-                    body = json.write(data)
+                try {
+                    client.post("$it/add_pool_item") {
+                        body = json.write(data)
+                    }
+                } catch (e: Exception) {
+                    // do nothing
                 }
             }
         }
@@ -33,15 +41,19 @@ class NetworkPeer(private val client: HttpClient, private val blockchain: IBlock
         if (hosts.isEmpty()) return
         val currentLastBlock = blockchain.last()
         runBlocking {
-            val listBlock = hosts.map {
-                it to client.get<Block>("$it/last_block")
+            val listBlock = hosts.mapNotNull {
+                try {
+                    it to client.get<Block>("$it/last_block")
+                } catch (e: Exception) {
+                    null
+                }
             }
 
             val mostCommonHash = listBlock.groupingBy { it.second.hash }.eachCount().maxBy { it.value }?.key
 
             val sameCount = listBlock.count { it.second == currentLastBlock }
 
-            if (!blockchain.verifyChain() || sameCount < hosts.size / 2) {
+            if (!blockchain.verifyChain() || sameCount < listBlock.size / 2) {
                 // Need To Sync
                 val host = listBlock.first { it.second.hash == mostCommonHash }.first
                 val newBlockChain = client.get<List<Block>>("$host/blockchain")

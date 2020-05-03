@@ -2,6 +2,7 @@ package api
 
 import blockchain.ListBlockchain
 import data.model.AddData
+import data.model.AddHost
 import data.model.Block
 import data.model.PoolItem
 import datapool.DataPool
@@ -32,9 +33,7 @@ class Controller {
     private val networkPeer = NetworkPeer(client, blockchain)
     private val dataPool = DataPool(blockchain, networkPeer)
 
-    fun initPeer(application: Application) {
-        val hosts = application.environment.config.propertyOrNull("peer.hosts")?.getList()
-        hosts?.forEach { networkPeer.addHost(it) }
+    init {
         networkPeer.startSyncJob()
     }
 
@@ -42,6 +41,7 @@ class Controller {
         routing {
             showData()
             addData()
+            peer()
         }
     }
 
@@ -59,6 +59,11 @@ class Controller {
         get("/pool") {
             val poolItems = dataPool.getPoolItem()
             call.respond(poolItems)
+        }
+
+        get("/last_block") {
+            val lastBlock = blockchain.last()
+            call.respond(lastBlock)
         }
     }
 
@@ -78,6 +83,14 @@ class Controller {
         post("/notify_new_block") {
             val block = call.receive<Block>()
             blockchain.newBlockFromPeer(block)
+        }
+    }
+
+    private fun Routing.peer() {
+        post("/peer/add") {
+            val data = call.receive<AddHost>()
+            networkPeer.addHost(data.host)
+            call.respond(mapOf("OK" to true))
         }
     }
 }

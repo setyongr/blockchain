@@ -21,6 +21,5 @@ fun Application.main() {
         }
     }
 
-    controller.initPeer(this)
     controller.initRouting(this)
 }
