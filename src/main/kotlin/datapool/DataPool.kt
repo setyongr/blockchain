@@ -1,13 +1,13 @@
 package datapool
 
-import blockchain.base.IBlockChain
+import blockchain.base.BlockChain
 import com.fasterxml.jackson.databind.ObjectMapper
 import data.model.PoolItem
 import peer.Peer
 import utils.HashUtils.sha512
 import java.util.*
 
-class DataPool(private val blockChain: IBlockChain, private val peer: Peer) {
+class DataPool(private val blockChain: BlockChain, private val peer: Peer) {
 
     var blockDataCount = 3
 

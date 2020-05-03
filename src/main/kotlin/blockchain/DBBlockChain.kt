@@ -1,6 +1,6 @@
 package blockchain
 
-import blockchain.base.BaseBlockchain
+import blockchain.base.BaseBlockChain
 import data.db.BlockEntity
 import data.db.BlockTable
 import data.model.Block
@@ -9,7 +9,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class DBBlockChain(private val resetTable: Boolean = false) : BaseBlockchain() {
+class DBBlockChain(private val resetTable: Boolean = false) : BaseBlockChain() {
 
     fun connect(host: String, port: String, database: String, username: String, password: String) {
         Database.connect(

@@ -1,6 +1,6 @@
 package peer
 
-import blockchain.base.IBlockChain
+import blockchain.base.BlockChain
 import data.model.Block
 import data.model.PoolItem
 import io.ktor.client.HttpClient
@@ -8,7 +8,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import kotlinx.coroutines.*
 
-class NetworkPeer(private val client: HttpClient, private val blockchain: IBlockChain) : Peer {
+class NetworkPeer(private val client: HttpClient, private val blockChain: BlockChain) : Peer {
     private var syncJob: Job? = null
 
     var hosts = mutableListOf<String>()
@@ -31,7 +31,7 @@ class NetworkPeer(private val client: HttpClient, private val blockchain: IBlock
 
     override fun sync() {
         if (hosts.isEmpty()) return
-        val currentLastBlock = blockchain.last()
+        val currentLastBlock = blockChain.last()
         runBlocking {
             val listBlock = hosts.mapNotNull {
                 try {
@@ -45,11 +45,11 @@ class NetworkPeer(private val client: HttpClient, private val blockchain: IBlock
 
             val sameCount = listBlock.count { it.second == currentLastBlock }
 
-            if (!blockchain.verifyChain() || sameCount < listBlock.size / 2) {
+            if (!blockChain.verifyChain() || sameCount < listBlock.size / 2) {
                 // Need To Sync
                 val host = listBlock.first { it.second.hash == mostCommonHash }.first
                 val newBlockChain = client.get<List<Block>>("$host/blockchain")
-                blockchain.replace(newBlockChain)
+                blockChain.replace(newBlockChain)
             }
         }
     }

@@ -2,7 +2,10 @@ package blockchain.base
 
 import data.model.Block
 
-interface IBlockChain {
+interface BlockChain {
+    var salt: String
+    var difficulty: Int
+
     fun createGenesis(): Block
     fun createBlock(data: String): Block
     fun add(block: Block)

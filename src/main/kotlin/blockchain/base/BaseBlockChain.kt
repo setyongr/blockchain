@@ -1,16 +1,17 @@
 package blockchain.base
 
 import data.model.Block
-import jdk.nashorn.internal.runtime.GlobalConstants
 import kotlinx.coroutines.*
 import utils.HashUtils
 
-abstract class BaseBlockchain : IBlockChain {
-    private var difficulty = 3
-    var miningJob: Job? = null
+abstract class BaseBlockChain : BlockChain {
+    override var difficulty = 3
+    override var salt = "WoWBlock"
+
+    private var miningJob: Job? = null
 
     private fun hashBlock(block: Block): String {
-        return HashUtils.sha512("WowBlock${block.nonce}${block.index}${block.timestamp}${block.data}")
+        return HashUtils.sha512("${salt}${block.nonce}${block.index}${block.timestamp}${block.data}")
     }
 
     override fun createGenesis(): Block = Block(

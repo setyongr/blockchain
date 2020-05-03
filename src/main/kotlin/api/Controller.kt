@@ -1,8 +1,8 @@
 package api
 
 import blockchain.DBBlockChain
-import blockchain.ListBlockchain
-import blockchain.base.IBlockChain
+import blockchain.ListBlockChain
+import blockchain.base.BlockChain
 import data.model.*
 import datapool.DataPool
 import io.ktor.application.Application
@@ -19,7 +19,6 @@ import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 import peer.NetworkPeer
-import peer.Peer
 
 class Controller {
     @KtorExperimentalAPI
@@ -29,13 +28,13 @@ class Controller {
         }
     }
 
-    private lateinit var blockchain: IBlockChain
+    private lateinit var blockChain: BlockChain
     private lateinit var networkPeer: NetworkPeer
     private lateinit var dataPool: DataPool
 
     fun initController(application: Application) = application.apply {
         val blockStorage = getConfigString("blockChainConfig.blockStorage")
-        blockchain = when (blockStorage) {
+        blockChain = when (blockStorage) {
             "db" -> DBBlockChain(getConfigString("postgresDatabase.resetDB") == "true").apply {
                 connect(
                     host = getConfigString("postgresDatabase.host"),
@@ -45,10 +44,14 @@ class Controller {
                     password = getConfigString("postgresDatabase.password")
                 )
             }
-            else -> ListBlockchain()
+            else -> ListBlockChain()
         }
-        networkPeer = NetworkPeer(client, blockchain)
-        dataPool = DataPool(blockchain, networkPeer)
+
+        blockChain.salt = getConfigString("blockChainConfig.salt")
+        blockChain.difficulty = getConfigString("blockChainConfig.difficulty").toInt()
+
+        networkPeer = NetworkPeer(client, blockChain)
+        dataPool = DataPool(blockChain, networkPeer)
 
         networkPeer.startSyncJob()
 
@@ -65,10 +68,10 @@ class Controller {
     private fun Routing.showData() {
         get("/blockchain") {
             val blocks = mutableListOf<Block>()
-            var current: Block? = blockchain.genesis()
+            var current: Block? = blockChain.genesis()
             while (current != null) {
                 blocks.add(current)
-                current = blockchain.next(current)
+                current = blockChain.next(current)
             }
             call.respond(blocks)
         }
@@ -79,7 +82,7 @@ class Controller {
         }
 
         get("/last_block") {
-            val lastBlock = blockchain.last()
+            val lastBlock = blockChain.last()
             call.respond(lastBlock)
         }
     }
@@ -99,7 +102,7 @@ class Controller {
 
         post("/notify_new_block") {
             val block = call.receive<Block>()
-            blockchain.newBlockFromPeer(block)
+            blockChain.newBlockFromPeer(block)
         }
     }
 
