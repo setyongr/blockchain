@@ -56,10 +56,10 @@ class Controller {
 
         transaction {
             if (resetTable) {
-                SchemaUtils.drop(BlockTable)
-                SchemaUtils.drop(BlockDataTable)
                 SchemaUtils.drop(PoolTable)
                 SchemaUtils.drop(HostTable)
+                SchemaUtils.drop(BlockDataTable)
+                SchemaUtils.drop(BlockTable)
             }
             SchemaUtils.createMissingTablesAndColumns(BlockTable)
             SchemaUtils.createMissingTablesAndColumns(BlockDataTable)

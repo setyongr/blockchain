@@ -7,15 +7,17 @@
 
 ## Configuration
 - Open `src/main/resources/application.conf`
-- Set the `blockChainConfig.blockStorage` to `db`
 - Set PostgreSQL Credentials in `postgresDatabase` block 
 - Save
 
 
 ## Run Command
-### IntelliJ IDEA
-For the best experience open this project in IntelliJ IDEA and run `Main.kt`
-``
+
+Default Port is 8080
+
+You can change the port in `src/main/resources/application.conf`
+
+
 ### Linux/Unix/MacOS
 ```
 $ ./gradlew run
@@ -38,3 +40,6 @@ Your can run the `.jar` file with
 ```
 $ java -jar filename.jar
 ```
+
+## API Docs
+[See here](API.md)
