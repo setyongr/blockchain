@@ -9,7 +9,7 @@ import data.db.PoolTable
 import data.model.AddData
 import data.model.AddHost
 import data.model.Block
-import data.model.PoolItem
+import data.model.DataItem
 import datapool.DataPool
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -127,7 +127,7 @@ class Controller {
         }
 
         post("/add_pool_item") {
-            val data = call.receive<PoolItem>()
+            val data = call.receive<DataItem>()
             dataPool.addItem(data)
             call.respond(mapOf("OK" to true))
         }

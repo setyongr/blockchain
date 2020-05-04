@@ -3,7 +3,7 @@ package datapool
 import blockchain.base.BlockChain
 import data.db.PoolEntity
 import data.db.PoolTable
-import data.model.PoolItem
+import data.model.DataItem
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -15,18 +15,18 @@ class DataPool(private val blockChain: BlockChain, private val peer: Peer) {
 
     fun getPoolItem() = transaction {
         PoolEntity.all().map {
-            PoolItem(it.data, it.timestamp)
+            DataItem(it.data, it.timestamp)
         }
     }
 
     fun add(data: String) {
         val timestamp = System.currentTimeMillis()
-        val item = PoolItem(data, timestamp.toString())
+        val item = DataItem(data, timestamp.toString())
 
         addItem(item)
     }
 
-    fun addItem(item: PoolItem) {
+    fun addItem(item: DataItem) {
        val isNotFound = transaction {
             PoolEntity.find {
                 (PoolTable.data eq item.data) and (PoolTable.timestamp eq item.timestamp)
@@ -48,12 +48,12 @@ class DataPool(private val blockChain: BlockChain, private val peer: Peer) {
     private fun afterAdd() {
         val poolCount = transaction { PoolEntity.count() }
         if (poolCount >= blockDataCount) {
-            val dataList = mutableListOf<PoolItem>()
+            val dataList = mutableListOf<DataItem>()
             repeat(blockDataCount) {
                 val currentData = transaction {
                     PoolEntity.all().orderBy(PoolTable.timestamp to SortOrder.ASC).first()
                 }
-                dataList.add(PoolItem(currentData.data, currentData.timestamp))
+                dataList.add(DataItem(currentData.data, currentData.timestamp))
                 transaction {
                     currentData.delete()
                 }

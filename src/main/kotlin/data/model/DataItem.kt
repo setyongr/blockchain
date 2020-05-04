@@ -1,10 +1,10 @@
 package data.model
 
-data class PoolItem(
+data class DataItem(
     val data: String,
     val timestamp: String
-): Comparable<PoolItem> {
-    override fun compareTo(other: PoolItem): Int {
+): Comparable<DataItem> {
+    override fun compareTo(other: DataItem): Int {
         return timestamp.compareTo(other.timestamp)
     }
 }

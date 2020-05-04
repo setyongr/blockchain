@@ -4,7 +4,7 @@ import blockchain.base.BlockChain
 import data.db.HostEntity
 import data.db.HostTable
 import data.model.Block
-import data.model.PoolItem
+import data.model.DataItem
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -21,7 +21,7 @@ class NetworkPeer(private val client: HttpClient, private val blockChain: BlockC
 
     fun clearHost() = transaction { HostTable.deleteAll() }
 
-    override fun send(data: PoolItem) {
+    override fun send(data: DataItem) {
         val json = io.ktor.client.features.json.defaultSerializer()
         runBlocking {
             getHost().forEach {

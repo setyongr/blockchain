@@ -1,7 +1,7 @@
 package data.db
 
 import data.model.Block
-import data.model.PoolItem
+import data.model.DataItem
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -46,7 +46,7 @@ class BlockEntity(id: EntityID<Int>) : IntEntity(id) {
     fun toBlock(): Block {
         val dataEntities = BlockDataEntity.find { BlockDataTable.block eq this@BlockEntity.id }.toList()
         val dataItem = dataEntities.map {
-            PoolItem(
+            DataItem(
                 data = it.data,
                 timestamp = it.timestamp
             )

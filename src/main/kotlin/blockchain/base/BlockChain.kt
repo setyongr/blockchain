@@ -1,14 +1,14 @@
 package blockchain.base
 
 import data.model.Block
-import data.model.PoolItem
+import data.model.DataItem
 
 interface BlockChain {
     var salt: String
     var difficulty: Int
 
     fun createGenesis(): Block
-    fun createBlock(data: List<PoolItem>): Block
+    fun createBlock(data: List<DataItem>): Block
     fun add(block: Block)
     fun verifyBlock(block: Block): Boolean
     fun verifyChain(): Boolean

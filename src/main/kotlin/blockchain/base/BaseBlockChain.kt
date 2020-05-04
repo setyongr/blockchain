@@ -1,7 +1,7 @@
 package blockchain.base
 
 import data.model.Block
-import data.model.PoolItem
+import data.model.DataItem
 import kotlinx.coroutines.*
 import utils.HashUtils
 
@@ -26,7 +26,7 @@ abstract class BaseBlockChain : BlockChain {
         prevHash = ""
     ).let { it.copy(hash = hashBlock(it)) }
 
-    override fun createBlock(data: List<PoolItem>): Block {
+    override fun createBlock(data: List<DataItem>): Block {
         val lastBlock = last()
 
         return Block(
