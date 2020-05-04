@@ -11,6 +11,7 @@ import io.ktor.client.request.post
 import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import kotlin.math.ceil
 
 class NetworkPeer(private val client: HttpClient, private val blockChain: BlockChain) : Peer {
     private var syncJob: Job? = null
@@ -53,7 +54,7 @@ class NetworkPeer(private val client: HttpClient, private val blockChain: BlockC
 
             val sameCount = listBlock.count { it.second == currentLastBlock }
 
-            if (!blockChain.verifyChain() || sameCount < listBlock.size / 2) {
+            if (!blockChain.verifyChain() || sameCount < ceil(listBlock.size / 2.0)) {
                 // Need To Sync
                 val host = listBlock.first { it.second.hash == mostCommonHash }.first
                 val newBlockChain = client.get<List<Block>>("$host/blockchain")

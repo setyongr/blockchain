@@ -4,12 +4,14 @@ import blockchain.base.BlockChain
 import data.db.PoolEntity
 import data.db.PoolTable
 import data.model.DataItem
+import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 import peer.Peer
 
 class DataPool(private val blockChain: BlockChain, private val peer: Peer) {
+    private var poolSyncJob: Job? = null
 
     private var blockDataCount = 3
 
@@ -61,6 +63,17 @@ class DataPool(private val blockChain: BlockChain, private val peer: Peer) {
 
             blockChain.mine(blockChain.createBlock(dataList)) {
                 peer.notifyBlockAdded(it)
+            }
+        }
+    }
+
+    fun startSyncJob() {
+        poolSyncJob = GlobalScope.launch(Dispatchers.IO) {
+            while (isActive) {
+                getPoolItem().forEach {
+                    peer.send(it)
+                }
+                delay(5000)
             }
         }
     }

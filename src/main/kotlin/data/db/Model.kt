@@ -6,6 +6,7 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.ReferenceOption
 
 
 object BlockTable : IntIdTable() {
@@ -61,7 +62,7 @@ object BlockDataTable : IntIdTable() {
     val data = text("data")
     val timestamp = varchar("timestamp", 255)
 
-    val block = reference("block", BlockTable)
+    val block = reference("block", BlockTable, onDelete = ReferenceOption.CASCADE)
 }
 
 class BlockDataEntity(id: EntityID<Int>) : IntEntity(id) {
