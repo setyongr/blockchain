@@ -12,10 +12,8 @@ abstract class BaseBlockChain : BlockChain {
     private var miningJob: Job? = null
 
     private fun hashBlock(block: Block): String {
-        val dataHashList = block.data.joinToString {
-            HashUtils.sha256(it.data + it.timestamp)
-        }
-        return HashUtils.sha512("${salt}${block.nonce}${block.index}${block.timestamp}${dataHashList}")
+        val dataHashList = HashUtils.sha256(block.data.joinToString {it.data + it.timestamp})
+        return HashUtils.sha512("${salt}${block.nonce}${block.index}${block.timestamp}${dataHashList}${block.prevHash}")
     }
 
     override fun createGenesis(): Block = Block(
