@@ -86,7 +86,6 @@ class Controller {
         dataPool = DataPool(blockChain, networkPeer)
 
         networkPeer.startSyncJob()
-        dataPool.startSyncJob()
 
         routing {
             showData()
