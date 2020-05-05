@@ -28,7 +28,7 @@ class DataPool(private val blockChain: BlockChain, private val peer: Peer) {
         addItem(item)
     }
 
-    fun addItem(item: DataItem) {
+    fun addItem(item: DataItem, fromRemote: Boolean = false) {
        val isNotFound = transaction {
             PoolEntity.find {
                 (PoolTable.data eq item.data) and (PoolTable.timestamp eq item.timestamp)
@@ -42,7 +42,7 @@ class DataPool(private val blockChain: BlockChain, private val peer: Peer) {
                     timestamp = item.timestamp
                 }
             }
-            peer.send(item)
+            if (!fromRemote) peer.send(item)
             afterAdd()
         }
     }

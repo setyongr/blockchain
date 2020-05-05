@@ -128,7 +128,7 @@ class Controller {
 
         post("/add_pool_item") {
             val data = call.receive<DataItem>()
-            dataPool.addItem(data)
+            dataPool.addItem(data, fromRemote = true)
             call.respond(mapOf("OK" to true))
         }
 
